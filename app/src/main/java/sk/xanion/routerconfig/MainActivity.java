@@ -1,18 +1,12 @@
 package sk.xanion.routerconfig;
 
-import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.Fragment;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -25,24 +19,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Properties;
-import java.util.Set;
 
 import sk.xanion.routerconfig.fragment.SettingsFragment;
 import sk.xanion.routerconfig.fragment.SetupWirelessFragment;
 import sk.xanion.routerconfig.model.WirelessStatus;
-import sk.xanion.routerconfig.receiver.RouterConfigAlarmReceiver;
 import sk.xanion.routerconfig.util.Settings;
 import sk.xanion.routerconfig.util.SettingsValidator;
 
@@ -105,49 +91,6 @@ public class MainActivity extends AppCompatActivity
             ex.printStackTrace();
         }
         return false;
-    }
-
-    private void startBlock() {
-        PendingIntent intent = getBlockIntent();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 5);
-        calendar.set(Calendar.MINUTE, 0);
-        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, -System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
-    }
-
-    private void startUnblock() {
-        PendingIntent intent = getUnBlockIntent();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.set(Calendar.HOUR_OF_DAY, 20);
-        calendar.set(Calendar.MINUTE, 0);
-
-        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
-    }
-
-    private void stopAlarm() {
-        AlarmManager mng = getAlarmMng();
-        mng.cancel(getBlockIntent());
-        mng.cancel(getUnBlockIntent());
-    }
-
-    private AlarmManager getAlarmMng() {
-        return (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-    }
-
-    private PendingIntent getBlockIntent() {
-        Intent intent = new Intent(this, RouterConfigAlarmReceiver.class);
-        intent.putExtra(RouterConfigAlarmReceiver.KEY_METHOD_TYPE, RequestServerData.METHOD_BLOCK);
-        return PendingIntent.getBroadcast(this, 0, intent, 0);
-    }
-
-    private PendingIntent getUnBlockIntent() {
-        Intent intent = new Intent(this, RouterConfigAlarmReceiver.class);
-        intent.putExtra(RouterConfigAlarmReceiver.KEY_METHOD_TYPE, RequestServerData.METHOD_UNBLOCK);
-        return PendingIntent.getBroadcast(this, 0, intent, 0);
     }
 
     private boolean isValidConfig() {
@@ -257,14 +200,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.btnOdblokuj: {
                 new RequestServerData(this, RequestServerData.METHOD_UNBLOCK).execute();
                 break;
-            }
-            case R.id.btnAutomatickeBlokovanieOn: {
-                startBlock();
-                startUnblock();
-                break;
-            }
-            case R.id.btnAutomatickeBlokovanieOff: {
-                stopAlarm();
             }
             case R.id.btnSave: {
                 Fragment f = getFragment();
