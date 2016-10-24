@@ -25,8 +25,9 @@ public class SettingsValidator {
             return false;
         }
         try {
-            return Patterns.WEB_URL.matcher(url).matches();
+            return Patterns.IP_ADDRESS.matcher(url.substring(7)).matches();
         } catch (Exception e) {
+           e.printStackTrace();
             return false;
         }
     }
@@ -41,12 +42,32 @@ public class SettingsValidator {
         return true;
     }
 
-    public static String validate(Context ctx) {
-        if (isRouterUrlValid(Settings.readUrl(ctx))) {
+
+    public static String validate(Context ctx, String url, String login, String password, String blockedMac, String ssid) {
+        if (!isRouterUrlValid(url)) {
             return ctx.getString(R.string.errorInvalidRouterUrl);
         }
-        if (TextUtils.isEmpty(Settings.readLogin(ctx))) {
+        if (TextUtils.isEmpty(login)) {
             return ctx.getString(R.string.errorInvalidLogin);
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            return ctx.getString(R.string.errorInvalidPassword);
+        }
+
+        if (!isMacAdressValid(blockedMac)) {
+            return ctx.getString(R.string.errorInvalidMacAdress);
+        }
+
+        if (TextUtils.isEmpty(ssid)) {
+            return ctx.getString(R.string.errorInvalidSSID);
+        }
+        return null;
+    }
+
+    public static String validate(Context ctx) {
+        if (!isRouterUrlValid(Settings.readUrl(ctx))) {
+            return ctx.getString(R.string.errorInvalidRouterUrl);
         }
 
         if (TextUtils.isEmpty(Settings.readPassword(ctx))) {
@@ -57,7 +78,7 @@ public class SettingsValidator {
             return ctx.getString(R.string.errorInvalidMacAdress);
         }
 
-        if (!isMacAdressValid(Settings.readSSID(ctx))) {
+        if (TextUtils.isEmpty(Settings.readSSID(ctx))) {
             return ctx.getString(R.string.errorInvalidSSID);
         }
         return null;

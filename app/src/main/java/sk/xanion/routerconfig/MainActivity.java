@@ -27,6 +27,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Properties;
 import java.util.Set;
 
 import sk.xanion.routerconfig.fragment.SettingsFragment;
@@ -48,9 +50,14 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RequestServerData.RequestServerDataListener {
     private Dialog mDialog;
 
+    private static final String FRAGMENT_TAG = "sk.xanion.routerconfig.FRAMGNET_TAG";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!isValidConfig()) {
+            loadProperties();
+        }
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -75,8 +82,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     private boolean loadProperties() {
-
-        return true;
+        Properties prop = new Properties();
+        try {
+            //load a properties file
+            prop.load(getAssets().open("settings.properties"));
+            String url = prop.getProperty("router.url");
+            String pass = prop.getProperty("router.password");
+            String macAdress = prop.getProperty("router.mac_adress1");
+            String ssId = prop.getProperty("router.ssid");
+            if (TextUtils.isEmpty(SettingsValidator.validate(this, url,
+                    "*****",
+                    pass,
+                    macAdress,
+                    ssId))) {
+                Settings.saveUrl(this, url);
+                Settings.saveBlockedMac(this, macAdress, 1);
+                Settings.savePassword(this, pass);
+                Settings.saveSSID(this, ssId);
+                return true;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 
     private void startBlock() {
@@ -85,8 +113,8 @@ public class MainActivity extends AppCompatActivity
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.set(Calendar.HOUR_OF_DAY, 5);
         calendar.set(Calendar.MINUTE, 0);
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, -System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
-        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
+        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, -System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
+        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
     }
 
     private void startUnblock() {
@@ -96,8 +124,8 @@ public class MainActivity extends AppCompatActivity
         calendar.set(Calendar.HOUR_OF_DAY, 20);
         calendar.set(Calendar.MINUTE, 0);
 
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
-        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
+        //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
+        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
     }
 
     private void stopAlarm() {
@@ -133,20 +161,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        if (isValidConfig()) {
-            navigateWirelesSSettings();
-        } else if (loadProperties()) {
-            navigateWirelesSSettings();
-        } else {
-            navigateAppSettings();
-        }
+        navigateWirelesSSettings();
     }
 
-
     private void navigateWirelesSSettings() {
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setCheckedItem(R.id.nav_camera);
-        onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        if (!isValidConfig()) {
+            navigateAppSettings();
+        } else {
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setCheckedItem(R.id.nav_camera);
+            onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        }
     }
 
     private void navigateAppSettings() {
@@ -193,23 +218,29 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+
         Fragment f = null;
-        if (id == R.id.nav_camera) {
-            f = SetupWirelessFragment.newInstance(null, null);
-        } else if (id == R.id.nav_gallery) {
+        if (id != R.id.nav_gallery && !isValidConfig()) {
             f = SettingsFragment.newInstance(null, null);
-        } else if (id == R.id.nav_slideshow) {
+            Toast.makeText(this, "Konfiguračné nastavenia nie sú validné. Uprav prosím", Toast.LENGTH_LONG).show();
+        } else {
+            if (id == R.id.nav_camera) {
+                f = SetupWirelessFragment.newInstance(null, null);
+            } else if (id == R.id.nav_gallery) {
+                f = SettingsFragment.newInstance(null, null);
+            } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
+            } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
+            } else if (id == R.id.nav_share) {
 
-        } else if (id == R.id.nav_send) {
+            } else if (id == R.id.nav_send) {
 
+            }
         }
 
         if (f != null) {
-            getFragmentManager().beginTransaction().replace(R.id.frame_content, f).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frame_content, f, FRAGMENT_TAG).commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -235,13 +266,18 @@ public class MainActivity extends AppCompatActivity
             case R.id.btnAutomatickeBlokovanieOff: {
                 stopAlarm();
             }
+            case R.id.btnSave: {
+                Fragment f = getFragment();
+                if (f != null && f instanceof SettingsFragment) {
+                    ((SettingsFragment) f).save();
+                }
+            }
         }
     }
 
     @Override
     public void onPostExecute(Context ctx, Bundle result, int methodType) {
         if (this == ctx) {
-
             if (result != null) {
                 TextView tv = null;
                 if (methodType == 3) {
@@ -294,5 +330,10 @@ public class MainActivity extends AppCompatActivity
         if (!mDialog.isShowing()) {
             mDialog.show();
         }
+    }
+
+
+    private Fragment getFragment() {
+        return getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
     }
 }

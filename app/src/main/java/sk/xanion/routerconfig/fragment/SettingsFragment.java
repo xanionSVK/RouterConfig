@@ -4,12 +4,20 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.nio.charset.Charset;
 
 import sk.xanion.routerconfig.R;
 import sk.xanion.routerconfig.RequestServerData;
+import sk.xanion.routerconfig.util.Settings;
+import sk.xanion.routerconfig.util.SettingsValidator;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -62,12 +70,58 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_setup_wireless, container, false);
+        return inflater.inflate(R.layout.fragment_settings, container, false);
+    }
+
+    public void save() {
+        String url = "";
+        String login = "";
+        String pass = "";
+        String macAdress = "";
+        String ssId = "";
+        TextView tv = (TextView) getActivity().findViewById(R.id.tvRouterUrl);
+        url = tv.getText().toString();
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterLogin);
+        login = tv.getText().toString();
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterHeslo);
+        pass = tv.getText().toString();
+        tv = (TextView) getActivity().findViewById(R.id.tvMcAdressKatka);
+        macAdress = tv.getText().toString();
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterSsid);
+        ssId = tv.getText().toString();
+        boolean passwordRequired = TextUtils.isEmpty(Settings.readPassword(getActivity()));
+        String error;
+        if (passwordRequired) {
+            error = SettingsValidator.validate(getActivity(), url, login, pass, macAdress, ssId);
+        } else {
+            error = SettingsValidator.validate(getActivity(), url, "*****", "*****", macAdress, ssId);
+        }
+        if (TextUtils.isEmpty(error)) {
+            Settings.saveUrl(getActivity(), url);
+            Settings.saveBlockedMac(getActivity(), macAdress, 1);
+            if (passwordRequired) {
+                String hashedPass = new String(Base64.encode((login + ":" + pass).getBytes(), Base64.NO_WRAP), Charset.forName("UTF-8"));
+                Settings.savePassword(getActivity(), hashedPass);
+            }
+            Settings.saveSSID(getActivity(), ssId);
+        } else {
+            Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        TextView tv = (TextView) getActivity().findViewById(R.id.tvRouterUrl);
+        tv.setText(Settings.readUrl(getActivity()));
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterLogin);
+        tv.setText(null);
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterHeslo);
+        tv.setText(null);
+        tv = (TextView) getActivity().findViewById(R.id.tvMcAdressKatka);
+        tv.setText(Settings.readBlockedMac(getActivity(), 1));
+        tv = (TextView) getActivity().findViewById(R.id.tvRouterSsid);
+        tv.setText(Settings.readSSID(getActivity()));
 
     }
 

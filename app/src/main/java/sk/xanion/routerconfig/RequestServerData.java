@@ -22,11 +22,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLHandshakeException;
 
 import sk.xanion.routerconfig.model.WirelessStatus;
+import sk.xanion.routerconfig.util.Settings;
 import sk.xanion.routerconfig.util.WifiStatusUtil;
 
 /**
@@ -152,7 +154,7 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
 
     private Bundle changeStatus() {
         final String TAG = "RequestServerData";
-        String serverUrl = "http://192.168.1.1/";
+        String serverUrl = Settings.readUrl(mCtx) + "/";
         String requestUrl = serverUrl + getMethod();
         URL url;
         Bundle result = new Bundle();
@@ -175,8 +177,8 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
             conn.setRequestProperty("Accept-Language", "sk,cs;q=0.8,en-US;q=0.5,en;q=0.3");
             conn.setRequestProperty("Accept-Encoding", "gzip, deflate");
             conn.setRequestProperty("DNT", "1");
-            conn.setRequestProperty("Referer", "http://192.168.1.1/basic/home_wlan.htm");
-            conn.setRequestProperty("Authorization", "Basic YWRtaW46d0g3QkRM");
+            conn.setRequestProperty("Referer", serverUrl + "basic/home_wlan.htm");
+            conn.setRequestProperty("Authorization", "Basic " + Settings.readPassword(mCtx));
             conn.setRequestProperty("Connection", "keep-alive");
 
             OutputStream os = conn.getOutputStream();
@@ -272,10 +274,10 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
         return result;
     }
 
-    public static WirelessStatus getWirelessStatus() {
+    public WirelessStatus getWirelessStatus() {
         WirelessStatus status = new WirelessStatus();
         try {
-            Document doc = Jsoup.connect("http://192.168.1.1/basic/home_wlan.htm").header("Authorization", "Basic YWRtaW46d0g3QkRM").get();
+            Document doc = Jsoup.connect("http://192.168.1.1/basic/home_wlan.htm").header("Authorization", "Basic " + Settings.readPassword(mCtx)).get();
             Elements macs = doc.getElementsByAttributeValue("NAME", "WLANFLT_MAC");
             Elements radios = doc.getElementsByAttributeValue("NAME", "WLAN_FltActive");
             if (radios != null) {
@@ -349,8 +351,8 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
                         "&WLANChannelBandwidth=20%2F40+MHz&WLANGuardInterval=AUTO&WLANMCS=AUTO&WLSSIDIndex=1&ESSID_HIDE_Selection" +
                         "=0&UseWPS_Selection=0&WPSMode_Selection=1&ESSID=tplnk&WEP_Selection=WPA-PSK%2FWPA2-PSK&TKIP_Selection" +
                         "=TKIP%2FAES&PreSharedKey=55preskakujucichpanacikov&WDSMode_Selection=0&WLAN_FltActive=1&WLAN_FltAction" +
-                        "=00000001&WLANFLT_MAC=a4%3Aa4%3Aa4%3Aa4%3Aa4%3Aa4&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC" +
-                        "=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00" +
+                        "=00000001&WLANFLT_MAC=a4%3Aa4%3Aa4%3Aa4%3Aa4%3Aa4&WLANFLT_MAC=" + Settings.readBlockedMac(mCtx, 1) +
+                        "&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00" +
                         "%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00%3A00%3A00%3A00%3A00%3A00&WLANFLT_MAC=00" +
                         "%3A00%3A00%3A00%3A00%3A00&wlanRadiusWEPFlag=0";
                 break;

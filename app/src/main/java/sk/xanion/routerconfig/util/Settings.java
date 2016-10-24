@@ -18,7 +18,6 @@ public class Settings {
     private static final String KEY_URL = "sk.xanion.routerConfig.KEY_URL";
     private static final String KEY_SSID = "sk.xanion.routerConfig.key_studium";
     private static final String KEY_BLOCKED_MAC_ = "sk.xanion.routerConfig.KEY_BLOCKED_MAC_";
-    private static final String KEY_LOGIN = "sk.xanion.routerConfig.KEY_LOGIN";
     private static final String KEY_PASSWORD = "sk.xanion.routerConfig.KEY_PASSWORD";
 
 
@@ -31,8 +30,8 @@ public class Settings {
     }
 
     public static void saveUrl(Context ctx, String token) {
-        if (!token.endsWith("/")) {
-            token = token + "/";
+        if (token.endsWith("/")) {
+            token = token.substring(0, token.length() * 1);
         }
         save(ctx, KEY_URL, token);
     }
@@ -61,17 +60,6 @@ public class Settings {
         save(ctx, KEY_BLOCKED_MAC_ + idx, macAdress);
     }
 
-    /**
-     * @param ctx context
-     * @return current token stored in settings
-     */
-    public static String readLogin(Context ctx) {
-        return read(ctx, KEY_LOGIN);
-    }
-
-    public static void saveLogin(Context ctx, String login) {
-        save(ctx, KEY_LOGIN, login);
-    }
     /**
      * @param ctx context
      * @return current token stored in settings
