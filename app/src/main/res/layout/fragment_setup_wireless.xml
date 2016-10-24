@@ -25,20 +25,6 @@
             android:onClick="onButtonPressed"
             android:text="@string/odblokuj" />
 
-        <Button
-            android:id="@+id/btnAutomatickeBlokovanieOn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onButtonPressed"
-            android:text="@string/automaticke"/>
-
-        <Button
-            android:id="@+id/btnAutomatickeBlokovanieOff"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="onButtonPressed"
-            android:text="@string/automaticke_stop" />
-
         <TextView
             android:id="@+id/tvResult"
             android:layout_width="match_parent"
