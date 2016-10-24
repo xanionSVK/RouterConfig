@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -27,16 +28,21 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Set;
 
 import sk.xanion.routerconfig.fragment.SettingsFragment;
 import sk.xanion.routerconfig.fragment.SetupWirelessFragment;
 import sk.xanion.routerconfig.model.WirelessStatus;
 import sk.xanion.routerconfig.receiver.RouterConfigAlarmReceiver;
+import sk.xanion.routerconfig.util.Settings;
+import sk.xanion.routerconfig.util.SettingsValidator;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RequestServerData.RequestServerDataListener {
@@ -117,6 +123,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private boolean isValidConfig() {
+        if (!TextUtils.isEmpty(SettingsValidator.validate(this))) {
+            return false;
+        }
 
         return true;
     }
@@ -179,7 +188,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.

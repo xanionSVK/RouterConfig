@@ -22,8 +22,15 @@
     <string name="label_url_hint" >napr. http://192.168.1.1/</string>
     <string name="label_url_routra" >Adresa routra:</string>
     <string name="label_mcadres_hint">napr. 00:00:00:00:00:00</string>
-    <string name="label_mcadres_katka" >Adresa katky:</string>
+    <string name="label_mcadres_katka" >Adresa Katky:</string>
     <string name="label_password" >Heslo:</string>
     <string name="label_login" >Login:</string>
+    <string name="label_ssid" >Názov wifi:</string>
+    <string name="ssid_hint" >tplnk</string>
     <string name="save" >Ulož</string>
+    <string name="errorInvalidRouterUrl">Zadaná adresa routra nie je validná.</string>
+    <string name="errorInvalidLogin">Zadaný login nie je validný.</string>
+    <string name="errorInvalidPassword">Zadané heslo nie je validné.</string>
+    <string name="errorInvalidMacAdress">Adresa Katky nie je validná.</string>
+    <string name="errorInvalidSSID">Názov wifi siete nie je validný.</string>
 </resources>

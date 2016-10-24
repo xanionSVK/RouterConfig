@@ -10,15 +10,12 @@ import android.net.wifi.WifiManager;
  */
 
 public class WifiStatusUtil {
-
-    private static final String WIFI_SSID = "tplnk";
-
     public static boolean isConnectedToHomeWifi(Context ctx) {
         try {
             WifiManager wifiManager = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             if (wifiInfo.getSupplicantState() == SupplicantState.COMPLETED) {
-                return WIFI_SSID.equals(wifiInfo.getBSSID());
+                return wifiInfo.getBSSID().equals(Settings.readSSID(ctx));
             }
         } catch (Exception e) {
             e.printStackTrace();
