@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import sk.xanion.routerconfig.fragment.SettingsFragment;
 import sk.xanion.routerconfig.fragment.SetupWirelessFragment;
 import sk.xanion.routerconfig.model.WirelessStatus;
 import sk.xanion.routerconfig.receiver.RouterConfigAlarmReceiver;
@@ -67,13 +68,18 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private boolean loadProperties() {
+
+        return true;
+    }
+
     private void startBlock() {
         PendingIntent intent = getBlockIntent();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
         calendar.set(Calendar.HOUR_OF_DAY, 5);
         calendar.set(Calendar.MINUTE, 0);
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, -System.currentTimeMillis() + 5*1000L, AlarmManager.INTERVAL_DAY, intent);
+        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, -System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
         //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
     }
 
@@ -84,7 +90,7 @@ public class MainActivity extends AppCompatActivity
         calendar.set(Calendar.HOUR_OF_DAY, 20);
         calendar.set(Calendar.MINUTE, 0);
 
-        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5*1000L, AlarmManager.INTERVAL_DAY, intent);
+        getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000L, AlarmManager.INTERVAL_DAY, intent);
         //getAlarmMng().setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, intent);
     }
 
@@ -110,10 +116,34 @@ public class MainActivity extends AppCompatActivity
         return PendingIntent.getBroadcast(this, 0, intent, 0);
     }
 
+    private boolean isValidConfig() {
+
+        return true;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        getFragmentManager().beginTransaction().replace(R.id.frame_content, SetupWirelessFragment.newInstance(null, null)).commit();
+        if (isValidConfig()) {
+            navigateWirelesSSettings();
+        } else if (loadProperties()) {
+            navigateWirelesSSettings();
+        } else {
+            navigateAppSettings();
+        }
+    }
+
+
+    private void navigateWirelesSSettings() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(R.id.nav_camera);
+        onNavigationItemSelected(navigationView.getMenu().getItem(0));
+    }
+
+    private void navigateAppSettings() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(R.id.nav_gallery);
+        onNavigationItemSelected(navigationView.getMenu().getItem(1));
     }
 
     @Override
@@ -142,6 +172,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            navigateAppSettings();
             return true;
         }
 
@@ -158,7 +189,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camera) {
             f = SetupWirelessFragment.newInstance(null, null);
         } else if (id == R.id.nav_gallery) {
-
+            f = SettingsFragment.newInstance(null, null);
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

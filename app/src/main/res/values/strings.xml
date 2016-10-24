@@ -19,4 +19,11 @@
     <string name="add_widget">Add widget</string>
     <string name="on" >On</string>
     <string name="of" >Off</string>
+    <string name="label_url_hint" >napr. http://192.168.1.1/</string>
+    <string name="label_url_routra" >Adresa routra:</string>
+    <string name="label_mcadres_hint">napr. 00:00:00:00:00:00</string>
+    <string name="label_mcadres_katka" >Adresa katky:</string>
+    <string name="label_password" >Heslo:</string>
+    <string name="label_login" >Login:</string>
+    <string name="save" >Ulož</string>
 </resources>
