@@ -14,7 +14,6 @@ import android.widget.Toast;
 import sk.xanion.routerconfig.R;
 import sk.xanion.routerconfig.RequestServerData;
 import sk.xanion.routerconfig.model.WirelessStatus;
-import sk.xanion.routerconfig.util.WifiStatusUtil;
 
 /**
  * Implementation of App Widget functionality.
@@ -58,12 +57,8 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
     }
 
     private void requestGetStatus(Context ctx) {
-        if (WifiStatusUtil.isConnectedToHomeWifi(ctx)) {
-            requestChangeWidgetIcon(ctx, android.R.drawable.ic_popup_sync);
-            new RequestServerData(ctx, this, 3).execute();
-        } else {
-            new RequestServerData(ctx, this, 3).execute();
-        }
+        requestChangeWidgetIcon(ctx, android.R.drawable.ic_popup_sync);
+        new RequestServerData(ctx, this, 3).execute();
     }
 
     @Override
@@ -101,7 +96,7 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
             appWidgetManager.updateAppWidget(appWidgetId, views);
         }
         if (!statusUnAvailable && intentStatus == null) {
-            //firs call
+            //first call
             requestGetStatus(context);
         }
     }
@@ -143,7 +138,7 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
                         intent.putExtra(KEY_WIDGET_STATUS, status.active);
                     } else {
                         intent.putExtra(KEY_WIDGET_STATUS_UNAVAILABLE, true);
-                        if (!TextUtils.isEmpty(status.exception)) {
+                        if (status != null && !TextUtils.isEmpty(status.exception)) {
                             Toast.makeText(ctx, status.exception, Toast.LENGTH_LONG).show();
                         }
                     }

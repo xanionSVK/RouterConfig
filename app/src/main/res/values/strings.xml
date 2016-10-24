@@ -37,5 +37,5 @@
     <string name="wifi_block_unavailable">Aktuálny stav nie je dostupný</string>
     <string name="wifi_block_activated">Blokovanie je zapnuté</string>
     <string name="wifi_block_deactivated">Blokovanie je vypnuté</string>
-    <string name="process_invalid_wifi">Modelovanie request</string>
+    <string name="process_invalid_wifi">Modelovanie requestu</string>
 </resources>

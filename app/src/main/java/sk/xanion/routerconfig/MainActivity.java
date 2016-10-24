@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private boolean isValidConfig() {
-        return !TextUtils.isEmpty(SettingsValidator.validate(this));
+        return TextUtils.isEmpty(SettingsValidator.validate(this));
     }
 
     @Override

@@ -75,12 +75,12 @@ public class SettingsFragment extends Fragment {
     }
 
     public void save() {
-        String url = "";
-        String login = "";
-        String pass = "";
-        String macAdress = "";
-        String ssId = "";
-        boolean processInvalidWifi = false;
+        String url;
+        String login;
+        String pass;
+        String macAdress;
+        String ssId;
+        boolean processInvalidWifi;
         TextView tv = (TextView) getActivity().findViewById(R.id.tvRouterUrl);
         url = tv.getText().toString();
         tv = (TextView) getActivity().findViewById(R.id.tvRouterLogin);
@@ -108,6 +108,8 @@ public class SettingsFragment extends Fragment {
                 Settings.savePassword(getActivity(), hashedPass);
             }
             Settings.saveSSID(getActivity(), ssId);
+
+            Toast.makeText(getActivity(), "Úspešne uložené", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
         }
