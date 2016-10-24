@@ -3,8 +3,12 @@ package sk.xanion.routerconfig;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
@@ -31,6 +35,7 @@ import sk.xanion.routerconfig.fragment.SetupWirelessFragment;
 import sk.xanion.routerconfig.model.WirelessStatus;
 import sk.xanion.routerconfig.util.Settings;
 import sk.xanion.routerconfig.util.SettingsValidator;
+import sk.xanion.routerconfig.widget.RouterWidget;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, RequestServerData.RequestServerDataListener {
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity
                 Settings.saveBlockedMac(this, macAdress, 1);
                 Settings.savePassword(this, pass);
                 Settings.saveSSID(this, ssId);
+                Settings.saveProcessInvalidWifi(this, false);
                 return true;
             }
         } catch (IOException ex) {
@@ -94,11 +100,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private boolean isValidConfig() {
-        if (!TextUtils.isEmpty(SettingsValidator.validate(this))) {
-            return false;
-        }
-
-        return true;
+        return !TextUtils.isEmpty(SettingsValidator.validate(this));
     }
 
     @Override
@@ -157,7 +159,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -171,14 +173,6 @@ public class MainActivity extends AppCompatActivity
                 f = SetupWirelessFragment.newInstance(null, null);
             } else if (id == R.id.nav_gallery) {
                 f = SettingsFragment.newInstance(null, null);
-            } else if (id == R.id.nav_slideshow) {
-
-            } else if (id == R.id.nav_manage) {
-
-            } else if (id == R.id.nav_share) {
-
-            } else if (id == R.id.nav_send) {
-
             }
         }
 
@@ -214,19 +208,24 @@ public class MainActivity extends AppCompatActivity
     public void onPostExecute(Context ctx, Bundle result, int methodType) {
         if (this == ctx) {
             if (result != null) {
-                TextView tv = null;
-                if (methodType == 3) {
+                TextView tv;
+                if (methodType == RequestServerData.METHOD_STATUS) {
                     if (result.containsKey("error")) {
                         tv = (TextView) findViewById(R.id.tvResult);
                         tv.setText(result.getString("error", ""));
                     } else if (result.containsKey(RequestServerData.KEY_WIRELESS_STATUS)) {
                         WirelessStatus status = (WirelessStatus) result.getSerializable(RequestServerData.KEY_WIRELESS_STATUS);
-                        if (status.exception != null) {
+                        if (status.exception != null || status.active == null) {
                             tv = (TextView) findViewById(R.id.tvResult);
                             tv.setText(result.getString("error", status.exception));
+                            tv = (TextView) findViewById(R.id.tvAktualnyStav);
+                            tv.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_wifi_block_unavailable, 0, 0, 0);
+                            tv.setText(R.string.wifi_block_unavailable);
                         } else {
                             tv = (TextView) findViewById(R.id.tvAktualnyStav);
-                            tv.setText(getString(R.string.aktualnyStav) + (Boolean.TRUE.equals(status.active) ? "Blokované" : "Povolené"));
+                            tv.setCompoundDrawablesWithIntrinsicBounds(Boolean.TRUE.equals(status.active) ? R.mipmap.ic_wifi_block_activated : R.mipmap.ic_wifi_block_deactivated, 0, 0, 0);
+                            tv.setText(Boolean.TRUE.equals(status.active) ? R.string.wifi_block_activated : R.string.wifi_block_deactivated);
+
                             ListView v = (ListView) findViewById(R.id.lvMacAdreses);
                             String defMac = "00:00:00:00:00:00";
                             if (status.macAdresses == null) {
@@ -247,6 +246,28 @@ public class MainActivity extends AppCompatActivity
                         mDialog.dismiss();
                     }
                 } else {
+                    int ids[] = AppWidgetManager.getInstance(ctx).getAppWidgetIds(new ComponentName(ctx, RouterWidget.class));
+                    Intent intent = new Intent(ctx, RouterWidget.class);
+                    switch (methodType) {
+                        case RequestServerData.METHOD_BLOCK:
+                        case RequestServerData.METHOD_UNBLOCK:
+                            if (result.containsKey(RequestServerData.KEY_CHANGE_STATUS)) {
+                                //request to change wireles
+                                if (methodType == RequestServerData.METHOD_BLOCK) {
+                                    intent.putExtra(RouterWidget.KEY_WIDGET_STATUS, Boolean.TRUE);
+                                } else {
+                                    intent.putExtra(RouterWidget.KEY_WIDGET_STATUS, Boolean.FALSE);
+                                }
+                            }
+                            break;
+                        default:
+                            return;
+                    }
+
+                    intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+                    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                    ctx.sendBroadcast(intent);
+
                     tv = (TextView) findViewById(R.id.tvResult);
                     tv.setText(result.getString("error", ""));
                     new RequestServerData(this, RequestServerData.METHOD_STATUS).execute();

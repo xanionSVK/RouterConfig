@@ -19,6 +19,7 @@ public class Settings {
     private static final String KEY_SSID = "sk.xanion.routerConfig.key_studium";
     private static final String KEY_BLOCKED_MAC_ = "sk.xanion.routerConfig.KEY_BLOCKED_MAC_";
     private static final String KEY_PASSWORD = "sk.xanion.routerConfig.KEY_PASSWORD";
+    private static final String KEY_PROCESS_INVALID_WIFI = "sk.xanion.routerConfig.KEY_AJ_BEZ_HOME_WIFI";
 
 
     /**
@@ -58,6 +59,18 @@ public class Settings {
 
     public static void saveBlockedMac(Context ctx, String macAdress, int idx) {
         save(ctx, KEY_BLOCKED_MAC_ + idx, macAdress);
+    }
+
+    /**
+     * @param ctx context
+     * @return current token stored in settings
+     */
+    public static boolean readProcessInvalidWifi(Context ctx) {
+        return "true".equals(read(ctx, KEY_PROCESS_INVALID_WIFI));
+    }
+
+    public static void saveProcessInvalidWifi(Context ctx, boolean processInvalidWifi) {
+        save(ctx, KEY_PROCESS_INVALID_WIFI ,""+processInvalidWifi);
     }
 
     /**

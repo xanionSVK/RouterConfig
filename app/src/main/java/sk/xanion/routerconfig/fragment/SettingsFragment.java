@@ -9,6 +9,7 @@ import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,6 +80,7 @@ public class SettingsFragment extends Fragment {
         String pass = "";
         String macAdress = "";
         String ssId = "";
+        boolean processInvalidWifi = false;
         TextView tv = (TextView) getActivity().findViewById(R.id.tvRouterUrl);
         url = tv.getText().toString();
         tv = (TextView) getActivity().findViewById(R.id.tvRouterLogin);
@@ -89,6 +91,7 @@ public class SettingsFragment extends Fragment {
         macAdress = tv.getText().toString();
         tv = (TextView) getActivity().findViewById(R.id.tvRouterSsid);
         ssId = tv.getText().toString();
+        processInvalidWifi = ((CheckBox) getActivity().findViewById(R.id.chbxProcessInvalidWifi)).isChecked();
         boolean passwordRequired = TextUtils.isEmpty(Settings.readPassword(getActivity()));
         String error;
         if (passwordRequired) {
@@ -99,6 +102,7 @@ public class SettingsFragment extends Fragment {
         if (TextUtils.isEmpty(error)) {
             Settings.saveUrl(getActivity(), url);
             Settings.saveBlockedMac(getActivity(), macAdress, 1);
+            Settings.saveProcessInvalidWifi(getActivity(), processInvalidWifi);
             if (passwordRequired) {
                 String hashedPass = new String(Base64.encode((login + ":" + pass).getBytes(), Base64.NO_WRAP), Charset.forName("UTF-8"));
                 Settings.savePassword(getActivity(), hashedPass);
@@ -122,7 +126,7 @@ public class SettingsFragment extends Fragment {
         tv.setText(Settings.readBlockedMac(getActivity(), 1));
         tv = (TextView) getActivity().findViewById(R.id.tvRouterSsid);
         tv.setText(Settings.readSSID(getActivity()));
-
+        ((CheckBox) getActivity().findViewById(R.id.chbxProcessInvalidWifi)).setChecked(Settings.readProcessInvalidWifi(getActivity()));
     }
 
     @Override

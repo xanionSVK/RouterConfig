@@ -76,18 +76,18 @@
             android:hint="@string/label_mcadres_hint"
             android:maxLines="1" />
 
+        <CheckBox
+            android:id="@+id/chbxProcessInvalidWifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/process_invalid_wifi" />
+
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="onButtonPressed"
             android:text="@string/save" />
-
-        <TextView
-            android:id="@+id/tvError"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="" />
     </LinearLayout>
 
 

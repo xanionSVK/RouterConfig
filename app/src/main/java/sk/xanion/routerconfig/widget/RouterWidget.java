@@ -7,7 +7,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import sk.xanion.routerconfig.R;
 import sk.xanion.routerconfig.RequestServerData;
@@ -45,7 +47,7 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
         }
     }
 
-    private void requestChangeWidgetIcon(Context ctx, int iconId) {
+    public static void requestChangeWidgetIcon(Context ctx, int iconId) {
         RemoteViews views = new RemoteViews(ctx.getPackageName(), R.layout.router_widget);
         int[] widgetIds = AppWidgetManager.getInstance(ctx).getAppWidgetIds(new ComponentName(ctx, RouterWidget.class));
         Intent intent = new Intent(ctx, RouterWidget.class);
@@ -128,6 +130,10 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
                     } else {
                         intent.putExtra(KEY_WIDGET_STATUS, Boolean.FALSE);
                     }
+                }else{
+                    if(result.containsKey("error")){
+                        Toast.makeText(ctx, result.getString("error"), Toast.LENGTH_LONG).show();
+                    }
                 }
                 break;
             case RequestServerData.METHOD_STATUS: {
@@ -137,6 +143,9 @@ public class RouterWidget extends AppWidgetProvider implements RequestServerData
                         intent.putExtra(KEY_WIDGET_STATUS, status.active);
                     } else {
                         intent.putExtra(KEY_WIDGET_STATUS_UNAVAILABLE, true);
+                        if (!TextUtils.isEmpty(status.exception)) {
+                            Toast.makeText(ctx, status.exception, Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
                 break;

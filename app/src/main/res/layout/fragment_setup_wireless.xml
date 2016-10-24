@@ -29,15 +29,16 @@
             android:id="@+id/tvResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
+            android:gravity="start|center_vertical"
             android:text="" />
 
         <TextView
             android:id="@+id/tvAktualnyStav"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/aktualnyStav" />
+            android:drawableLeft="@mipmap/ic_wifi_block_unavailable"
+            android:gravity="start|center_vertical"
+            android:text="@string/wifi_block_unavailable" />
 
         <ListView
             android:id="@+id/lvMacAdreses"

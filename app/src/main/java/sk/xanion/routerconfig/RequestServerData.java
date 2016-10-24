@@ -34,7 +34,6 @@ import sk.xanion.routerconfig.util.WifiStatusUtil;
 /**
  * Created by mkosik on 21. 10. 2016.
  */
-
 public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
 
     public static final String KEY_WIRELESS_STATUS = "sk.xanion.routerconfig.KEY_WIRELESS_STATUS";
@@ -94,9 +93,9 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
          * @param result     result bundle
          * @param methodType method type that was called
          */
-        public void onPostExecute(Context ctx, Bundle result, int methodType);
+        void onPostExecute(Context ctx, Bundle result, int methodType);
 
-        public void onPreexecute(int methodType);
+        void onPreexecute(int methodType);
     }
 
     private static boolean activated = true;
@@ -110,45 +109,71 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
         }
     }
 
+    private Bundle doRequestInwalidWifi() {
+        try {
+            Thread.sleep(new Random().nextInt(5) * 1000L);
+        } catch (InterruptedException e) {
+            //nothing to do
+        }
+        Bundle result = null;
+        switch (mMethodType) {
+            case METHOD_BLOCK:
+            case METHOD_UNBLOCK: {
+                activated = !activated;
+                result = new Bundle();
+                result.putString("result", "Volanie bolo úspešné");
+                result.putBoolean(KEY_CHANGE_STATUS, activated);
+                break;
+            }
+            case 3: {
+                result = new Bundle();
+                WirelessStatus status = new WirelessStatus();
+                status.active = activated;
+                status.macAdresses = new ArrayList<>();
+                status.macAdresses.add("bez wifi pridana mcadresa");
+                result.putBoolean(KEY_CHANGE_STATUS, activated);
+                result.putSerializable(KEY_WIRELESS_STATUS, status);
+                break;
+            }
+        }
+        return result;
+
+    }
+
     @Override
     protected Bundle doInBackground(Void... voids) {
         Bundle result = null;
         boolean isHomeWifi = WifiStatusUtil.isConnectedToHomeWifi(mCtx);
-        if (!isHomeWifi) {
-            try {
-                Thread.sleep(new Random().nextInt(5) * 1000L);
-            } catch (InterruptedException e) {
-            }
+
+        if (!isHomeWifi && Settings.readProcessInvalidWifi(mCtx)) {
+            return doRequestInwalidWifi();
         }
+
         switch (mMethodType) {
             case METHOD_BLOCK:
             case METHOD_UNBLOCK: {
                 if (isHomeWifi) {
                     result = changeStatus();
                 } else {
-                    activated = !activated;
                     result = new Bundle();
-                    result.putString("result", "Volanie bolo úspešné");
-                    result.putBoolean(KEY_CHANGE_STATUS, activated);
+                    result.putString("error", "Nie som pripojený k našej domácej wifi");
                 }
                 break;
             }
             case 3: {
                 result = new Bundle();
-                WirelessStatus status = null;
+                WirelessStatus status;
                 if (isHomeWifi) {
                     status = getWirelessStatus();
                 } else {
                     status = new WirelessStatus();
-                    status.active = activated;
-                    status.macAdresses = new ArrayList<>();
-                    status.macAdresses.add("bez wifi pridana mcadresa");
-                    result.putBoolean(KEY_CHANGE_STATUS, activated);
+                    status.exception = "Nie som pripojený k našej domácej wifi";
+                    result.putString("error", "Nie som pripojený k našej domácej wifi");
                 }
                 result.putSerializable(KEY_WIRELESS_STATUS, status);
                 break;
             }
-        }//result.clear();
+        }
         return result;
     }
 
@@ -216,8 +241,8 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
                 }
                 default: {
                     String line;
-                    BufferedReader br = null;
                     if (conn.getErrorStream() != null) {
+                        BufferedReader br;
                         String response = "";
                         try {
                             br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
@@ -274,7 +299,7 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
         return result;
     }
 
-    public WirelessStatus getWirelessStatus() {
+    private WirelessStatus getWirelessStatus() {
         WirelessStatus status = new WirelessStatus();
         try {
             Document doc = Jsoup.connect("http://192.168.1.1/basic/home_wlan.htm").header("Authorization", "Basic " + Settings.readPassword(mCtx)).get();
@@ -340,7 +365,7 @@ public class RequestServerData extends AsyncTask<Void, Void, Bundle> {
      * 1 - pre zapnutie blokovania
      * 2 - pre vypnutie blokovania
      *
-     * @return
+     * @return parametre pre zvolenú metódu
      */
     private String generateParams() {
         String result = null;
