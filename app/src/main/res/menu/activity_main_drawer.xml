@@ -8,7 +8,7 @@
             android:title="@string/wifi_settings" />
         <item
             android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_settings"
             android:title="@string/action_settings" />
     </group>
 
